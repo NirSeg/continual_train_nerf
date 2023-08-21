@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  nerfstudio:
+    image: dromni/nerfstudio:0.3.2
+    container_name: nerf_studio
+    ipc: host
+    ports:
+      - "7007:7007"
+    working_dir: /workspace
+    # These two are needed for interactive shells
+#    stdin_open: true
+#    tty: true
+
+    # Enable GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+    env_file:
+      - ./.env
+
+    volumes:
+      - C:\Users\MixedRealityLab\PycharmProjects\NeRFleXGIF\.cache:/home/user/.cache
+#      - C:\Users\lizas\PycharmProjects\NeRFleXGIF\data:/workspace/data
+      - C:\Users\MixedRealityLab\PycharmProjects\NeRFleXGIF\:/workspace/
+    networks:
+      - NerfNetwork
+
+networks:
+  NerfNetwork:
+    name: nerf_net
