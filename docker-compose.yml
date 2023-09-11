@@ -3,7 +3,7 @@ version: "3.8"
 services:
   nerfstudio:
     image: dromni/nerfstudio:0.3.2
-    container_name: nerf_studio
+    container_name: continual_train_nerf
     ipc: host
     ports:
       - "7007:7007"
@@ -25,12 +25,12 @@ services:
       - ./.env
 
     volumes:
-      - C:\Users\MixedRealityLab\PycharmProjects\NeRFleXGIF\.cache:/home/user/.cache
-#      - C:\Users\lizas\PycharmProjects\NeRFleXGIF\data:/workspace/data
-      - C:\Users\MixedRealityLab\PycharmProjects\NeRFleXGIF\:/workspace/
+      - C:\Users\MixedRealityLab\PycharmProjects\continual_train_nerf\.cache:/home/user/.cache
+#      - C:\Users\MixedRealityLab\PycharmProjects\continual_train_nerf\data:/workspace/data
+      - C:\Users\MixedRealityLab\PycharmProjects\continual_train_nerf\:/workspace/
     networks:
-      - NerfNetwork
+      - NerfNetwork2
 
 networks:
-  NerfNetwork:
-    name: nerf_net
+  NerfNetwork2:
+    name: nerf_net2
