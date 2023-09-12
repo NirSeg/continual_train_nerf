@@ -9,7 +9,6 @@ from typing import Callable
 from src.file_manager import FileManager
 import shutil
 import math
-import nerfstudio
 
 def path(s):
     p = Path(s)
@@ -107,33 +106,37 @@ def train(processed_dir: str | os.PathLike | Path, project_name: str, num_set: i
     for line in execute_and_track_output(train_cmd, kill_proc_cond=kill_init_train_cond):
         print(line, end='')
 
-# def render(images_data: ImagesData, trained_dir : str | os.PathLike | Path):
-#     last_trained_config_dir = get_last_trained_model(trained_dir)
-#     fm = FileManager(trained_dir.joinpath(last_trained_config_dir).joinpath('config.yml'))
-#     cameras_extrinsic = fm.viewer_poses(all_poses=True, update_poses=True)
-#
-#     x = 'horizontal' if images_data.height > images_data.width else 'vertical'
-#     focal_length = fm.load_transforms_file().intrinsics.fl_y if x == 'horizontal' else fm.load_transforms_file().intrinsics.fl_x
-#     front_edge = max(images_data.height, images_data.width)
-#     fov = 2 * math.atan(front_edge / (2 * focal_length)) * 180 / math.pi
-#     cam_path_filename = 'camera_path'
-#     full_cam_path = fm.generate_cam_path_file(cam_path_filename, *cut_interval, fps=fps, fov=int(fov),
-#                                               look_at_cameras=cameras_extrinsic)
-#
-#     shutil.rmtree(fm.last_render_dir)
-#     os.makedirs(fm.last_render_dir)
-#     render_cmd = ['ns-render', 'camera-path', '--output-format', 'images',
-#                   '--load-config', str(fm.config_path),
-#                   '--output-path', str(fm.last_render_dir),
-#                   '--camera-path-filename', str(full_cam_path)]
-#     print(f'Synthesizing frames with cmd:\n{render_cmd}')
-#
-#     try:
-#         subprocess.check_call(render_cmd)
-#     except subprocess.CalledProcessError as e:
-#         print(f'Command:\n{render_cmd}\n,Failed with return code:{e.returncode}.')
-#         exit(-1)
-#     print('Done!')
+# def get_cameras_extrinsic(set_name):
+
+
+def render_next_images(images_data: ImagesData, trained_dir : str | os.PathLike | Path):
+    last_trained_config_dir = get_last_trained_model(trained_dir)
+    fm = FileManager(trained_dir.joinpath(last_trained_config_dir).joinpath('config.yml'))
+    cameras_extrinsic = fm.viewer_next_poses(all_poses=True, update_poses=True)
+
+    x = 'horizontal' if images_data.height > images_data.width else 'vertical'
+    focal_length = fm.load_transforms_file().intrinsics.fl_y if x == 'horizontal' else fm.load_transforms_file().intrinsics.fl_x
+    front_edge = images_data.height
+    fov = 2 * math.atan(front_edge / (2 * focal_length)) * 180 / math.pi
+    cam_path_filename = 'camera_path'
+    fps = 1
+    full_cam_path = fm.generate_cam_path_file(cam_path_filename, fps=fps, fov=int(fov + 0.5),
+                                              look_at_cameras=cameras_extrinsic)
+
+    shutil.rmtree(fm.last_render_dir)
+    os.makedirs(fm.last_render_dir)
+    render_cmd = ['ns-render', 'camera-path', '--output-format', 'images',
+                  '--load-config', str(fm.config_path),
+                  '--output-path', str(fm.last_render_dir),
+                  '--camera-path-filename', str(full_cam_path)]
+    print(f'Synthesizing frames with cmd:\n{render_cmd}')
+
+    try:
+        subprocess.check_call(render_cmd)
+    except subprocess.CalledProcessError as e:
+        print(f'Command:\n{render_cmd}\n,Failed with return code:{e.returncode}.')
+        exit(-1)
+    print('Done!')
 
 def continual_train(args):
     # ---------------------------------------  Preprocess images metadata  ----------------------------------------
@@ -148,21 +151,26 @@ def continual_train(args):
 
     for i in range(1, images_data.num_sets):
         processed_dir_cur_set = processed_dir.joinpath(f'set_{i}')
-        trained_dir = Path(f'/workspace/outputs/set_{i}/nerfacto')
+        trained_dir = Path(f'/workspace/outputs/continual_data/set_{i - 1}/nerfacto')
         # ---------------------------------------  render new images from cameras extrinsic of set i  ------------------
-        # render(images_data, trained_dir)
+        render_next_images(images_data, trained_dir)
         # ---------------------------------------  build masks for set i  ----------------------------------------
         j = 0
         # ---------------------------------------  retrain the model on set i  ----------------------------------------
         train(processed_dir, project_name, i)
 
-# def run_viewer(args):
+def run_viewer(args):
+    project_name = args.data_path.name
+    config_path = Path(f'/workspace/outputs/{project_name}/set_0/nerfacto')
+    config_path = config_path.joinpath(get_last_trained_model(config_path)).joinpath('config.yml')
+    viewer_cmd = ['ns-viewer', '--load-config', config_path]
+    subprocess.check_call(viewer_cmd)
 
 
 if __name__ == '__main__':
     args = parsed_args()
     if args.skip_train:
         i = 0
-        # run_viewer(args)
+        run_viewer(args)
     else:
         continual_train(args)

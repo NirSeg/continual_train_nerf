@@ -41,5 +41,5 @@ class ImagesData:
     @property
     def height(self) -> int:
         if self._height is None:
-            self._width = self._frames[0][0].shape[0]
+            self._height = self._frames[0][0].shape[0]
         return int(self._height)
