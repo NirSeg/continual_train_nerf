@@ -8,7 +8,6 @@ class ImagesData:
         self._path = path_to_data
         self._num_sets = sum(1 for entry in os.scandir(self._path) if entry.is_dir())
         self._frames = []
-        self._num_frames_per_set = []
         for i in range(self._num_sets):
             path_to_cur_images = self._path.joinpath(f'set_{i}/images')
             images = []
@@ -16,7 +15,6 @@ class ImagesData:
                 if filename.endswith(('.JPG', '.jpg', 'jpeg', '.png')):
                     image_path = path_to_cur_images.joinpath(filename)
                     images.append(cv2.imread(str(image_path)))
-            self._num_frames_per_set.append(len(images))
             self._frames.append(images)
         self._height = None
         self._width = None
@@ -24,10 +22,6 @@ class ImagesData:
     @property
     def num_sets(self):
         return self._num_sets
-
-    @property
-    def num_frames_per_set(self):
-        return self._num_frames_per_set
 
     def frame_count(self, num_set: int) -> int:
         return len(self._frames[num_set])

@@ -9,6 +9,8 @@ from typing import Callable
 from src.file_manager import FileManager
 import shutil
 import math
+from process_data import colmap_process
+
 
 def path(s):
     p = Path(s)
@@ -28,6 +30,7 @@ def parsed_args():
                         help="Skip training of set 0, model was trained ahead of time.")
     parser.add_argument('--skip-train', action='store_true',
                         help="Skip training, model was trained ahead of time.")
+    parser.add_argument('-n', '--num-sets', type=int, help="number of the sets")
     parser.add_argument('--train-from-checkpoint', action='store_true',
                         help="Continue training from checkpoint")
     args = parser.parse_args()
@@ -109,7 +112,7 @@ def train(processed_dir: str | os.PathLike | Path, project_name: str, num_set: i
 # def get_cameras_extrinsic(set_name):
 
 
-def render_next_images(images_data: ImagesData, trained_dir : str | os.PathLike | Path):
+def render_next_images(images_data: ImagesData, trained_dir: str | os.PathLike | Path):
     last_trained_config_dir = get_last_trained_model(trained_dir)
     fm = FileManager(trained_dir.joinpath(last_trained_config_dir).joinpath('config.yml'))
     cameras_extrinsic = fm.viewer_next_poses(all_poses=True, update_poses=True)
@@ -138,13 +141,13 @@ def render_next_images(images_data: ImagesData, trained_dir : str | os.PathLike 
         exit(-1)
     print('Done!')
 
+
 def continual_train(args):
+    # ---------------------------------------  Preprocess via COLMAP  --------------------------------------------
+    colmap_process(args.data_path, args.num_sets)
     # ---------------------------------------  Preprocess images metadata  ----------------------------------------
     images_data = ImagesData(args.data_path)
-    # ---------------------------------------  Preprocess via COLMAP  --------------------------------------------
-    num_frames_per_set = images_data.num_frames_per_set
     processed_dir = Path(args.data_path)
-    process_data(processed_dir, num_frames_per_set)
     # ---------------------------------------  Train the model on set 0  ----------------------------
     project_name = processed_dir.name
     init_train(processed_dir, project_name, args.skip_init_train, args.train_from_checkpoint)
@@ -159,10 +162,12 @@ def continual_train(args):
         # ---------------------------------------  retrain the model on set i  ----------------------------------------
         train(processed_dir, project_name, i)
 
+
 def run_viewer(args):
     project_name = args.data_path.name
     config_path = Path(f'/workspace/outputs/{project_name}/set_0/nerfacto')
     config_path = config_path.joinpath(get_last_trained_model(config_path)).joinpath('config.yml')
+
     viewer_cmd = ['ns-viewer', '--load-config', config_path]
     subprocess.check_call(viewer_cmd)
 
