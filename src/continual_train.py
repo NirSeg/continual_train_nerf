@@ -79,9 +79,11 @@ def execute_and_track_output(cmd: list[str], kill_proc_cond: Callable[[str], boo
         raise subprocess.CalledProcessError(return_code, cmd)
 
 
-def init_train(processed_dir: str | os.PathLike | Path, project_name: str, skip_init_train: bool, train_from_checkpoint: bool):
+def init_train(processed_dir: str | os.PathLike | Path, project_name: str, skip_init_train: bool,
+               train_from_checkpoint: bool):
     output_dir = Path(f'/workspace/outputs/{project_name}')
-    train_cmd = ['ns-train', 'nerfacto', '--data', processed_dir.joinpath('set_0'), '--output-dir', output_dir]
+    train_cmd = ['ns-train', 'nerfacto', '--data', processed_dir.joinpath('set_0'), '--output-dir', output_dir,
+                 '--pipeline.datamanager.camera-optimizer.mode', 'off']
     if skip_init_train:
         print('Training model skipped.')
     # elif train_from_checkpoint:
@@ -101,13 +103,15 @@ def init_train(processed_dir: str | os.PathLike | Path, project_name: str, skip_
 
 def train(processed_dir: str | os.PathLike | Path, project_name: str, num_set: int):
     output_dir = Path(f'/workspace/outputs/{project_name}')
-    train_cmd = ['ns-train', 'nerfacto', '--data', processed_dir.joinpath(f'set_{num_set}'), '--output_dir', output_dir]
+    train_cmd = ['ns-train', 'nerfacto', '--data', processed_dir.joinpath(f'set_{num_set}'), '--output_dir', output_dir,
+                 '--pipeline.datamanager.camera-optimizer.mode', 'off']
     trained_dir = Path(f'/workspace/outputs/{project_name}/set_{num_set - 1}/nerfacto')
     path_to_latest_checkpoint = trained_dir.joinpath(get_last_trained_model(trained_dir)).joinpath('nerfstudio_models')
     train_cmd.extend(['--load-dir', path_to_latest_checkpoint])
     print(f'trains on set{num_set}')
     for line in execute_and_track_output(train_cmd, kill_proc_cond=kill_init_train_cond):
         print(line, end='')
+
 
 # def get_cameras_extrinsic(set_name):
 
@@ -154,7 +158,7 @@ def continual_train(args):
 
     for i in range(1, images_data.num_sets):
         processed_dir_cur_set = processed_dir.joinpath(f'set_{i}')
-        trained_dir = Path(f'/workspace/outputs/continual_data/set_{i - 1}/nerfacto')
+        trained_dir = Path(f'/workspace/outputs/{project_name}/set_{i - 1}/nerfacto')
         # ---------------------------------------  render new images from cameras extrinsic of set i  ------------------
         render_next_images(images_data, trained_dir)
         # ---------------------------------------  build masks for set i  ----------------------------------------

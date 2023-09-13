@@ -7,13 +7,30 @@ from pathlib import Path
 import subprocess
 
 
+def rename_images(directory: str | os.PathLike | Path):
+    # Get a list of image files in the directory
+    directory = directory.joinpath('images')
+    image_files = [f for f in os.listdir(directory) if f.lower().endswith(('.png', '.jpg', '.jpeg', 'JPG'))]
+
+    # Sort the image files lexicographically
+    image_files.sort()
+
+    # Rename the images
+    for i, image_file in enumerate(image_files, start=1):
+        new_name = f"frame_{i:05d}.png"
+        os.rename(os.path.join(directory, image_file), os.path.join(directory, new_name))
+        print(f"Renamed {image_file} to {new_name}")
+
+
 def colmap_process(source_dir: str | os.PathLike | Path, num_sets: int):
     temp_dir = source_dir.joinpath('temp')
     if not temp_dir.joinpath('transforms.json').exists() and temp_dir.exists():
+        rename_images(temp_dir)
         process_data_cmd = ['ns-process-data', 'images', '--data', temp_dir.joinpath('images'), '--output-dir',
                             temp_dir]
         subprocess.check_call(process_data_cmd)
         create_image_sets(temp_dir, source_dir, num_sets)
+        shutil.rmtree(temp_dir)
 
 
 def create_image_sets(source_dir, destination_dir, num_sets):
