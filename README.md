@@ -14,15 +14,15 @@ ___
            the
            container (do not edit the container part).
     3. Setup a listener on the docker socket:
-        1. <img src="md_resources/docker_connection.png" alt="drawing" width="800"/>
+        1. <img src="images/docker_connection.png" alt="drawing" width="800"/>
         2. Connection successful should appear when connected, otherwise, try troubleshooting your docker desktop
            software.
     4. Create a remote interpreter based on the docker-compose.yml:
-        1. <img src="md_resources/add_interpreter.png" alt="drawing" width="800"/>
+        1. <img src="images/add_interpreter.png" alt="drawing" width="800"/>
         2. Keep pressing next:
-           <img src="md_resources/add_interpreter2.png" alt="drawing" width="800"/>
+           <img src="images/add_interpreter2.png" alt="drawing" width="800"/>
         3. Verify that your python script's run configuration has the docker interpreter:
-           <img src="md_resources/verify_interpreter.png" alt="drawing" width="800"/>
+           <img src="images/verify_interpreter.png" alt="drawing" width="800"/>
 
 4. Run from cmd line:
     ```bash
