@@ -26,9 +26,9 @@ ___
 
 4. Run from cmd line:
     ```bash
-    docker run --gpus all -v C:\Users\lizas\PycharmProjects\NeRFleXGIF:/workspace/ -v C:\Users\lizas\PycharmProjects\NeRFleXGIF\.cache:/home/user/.cache/ -p 7007:7007 --rm -it --ipc=host dromni/nerfstudio:0.3.2 "python main.py [ARGS]"
+    docker run --gpus all -v [absolute project path]:/workspace/ -v[absolute project path].cache:/home/user/.cache/ -p 7007:7007 --rm -it --ipc=host dromni/nerfstudio:0.3.2 "python main.py [ARGS]"
     ```
    For help:
     ```bash
-    docker run --gpus all -v C:\Users\lizas\PycharmProjects\NeRFleXGIF:/workspace/ -v C:\Users\lizas\PycharmProjects\NeRFleXGIF\.cache:/home/user/.cache/ -p 7007:7007 --rm -it --ipc=host dromni/nerfstudio:0.3.2 "python main.py --help"
+    docker run --gpus all -v [absolute project path]:/workspace/ -v [absolute project path].cache:/home/user/.cache/ -p 7007:7007 --rm -it --ipc=host dromni/nerfstudio:0.3.2 "python main.py --help"
     ```
