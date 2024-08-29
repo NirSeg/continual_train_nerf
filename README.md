@@ -1,5 +1,9 @@
 # continual_train_nerf
-Writing a script in nerfstudio for continual training on a NeRF.
+detecting & implementing new object
+
+Avishai Oz & Nir Segal - Moderator: Simon Korman
+
+We wrote a script in nerfstudio for detecting a new object in the scene and implementing the new object in the 3D model, the NeRF network.
 ___
 
 ## Installation process:
